@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Topics Scraper</title>
+    <style>
+        #loader {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trending Topics Scraper</h1>
+    <button id="runScriptBtn">Click here to run the script</button>
+
+    <div id="loader"></div>
+
+    <div id="result">
+    </div>
+
+    <script>
+        let isFirstLoad = true;
+
+        const updateResult = (result) => {
+            const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
+
+            loader.style.display = 'none';
+            resultDiv.innerHTML = `
+                <h2>Scraping Result:</h2>
+                <p><strong>These are the most happening topics as on:</strong> ${result.dateTime}</p>
+                
+                <ul>
+                    <li><strong>Trend 1:</strong> ${result.trends[0]}</li>
+                    <li><strong>Trend 2:</strong> ${result.trends[1]}</li>
+                    <li><strong>Trend 3:</strong> ${result.trends[2]}</li>
+                    <li><strong>Trend 4:</strong> ${result.trends[3]}</li>
+                    <li><strong>Trend 5:</strong> ${result.trends[4]}</li>
+                </ul>
+
+                <p><strong>The IP address used for this query was:</strong> ${result.ipAddress}</p>
+
+                <h3>Here’s a JSON extract of this record from the MongoDB:</h3>
+                <pre>
+                [
+                    {
+                        "_id": { "ObjectId": "${result.jsonExtract._id}" },
+                        "nameoftrend1": "${result.jsonExtract.nameoftrend1}",
+                        "nameoftrend2": "${result.jsonExtract.nameoftrend2}",
+                        "nameoftrend3": "${result.jsonExtract.nameoftrend3}",
+                        "nameoftrend4": "${result.jsonExtract.nameoftrend4}",
+                        "nameoftrend5": "${result.jsonExtract.nameoftrend5}"
+                    }
+                ]
+                </pre>
+
+                <button id="runAgainBtn">Click here to run the query again</button>
+            `;
+
+            document.getElementById('runAgainBtn').addEventListener('click', runScript);
+        };
+
+        const runScript = async () => {
+            const resultDiv = document.getElementById('result');
+            const loader = document.getElementById('loader');
+
+            loader.style.display = 'block';
+            resultDiv.innerHTML = ''; 
+
+            try {
+                const response = await fetch('/run-script');
+                const result = await response.json();
+
+                isFirstLoad = false;
+
+                updateResult(result);
+            } catch (error) {
+                loader.style.display = 'none';
+                resultDiv.innerHTML = `<p style="color:red;">An error occurred: ${error.message}</p>`;
+            }
+        };
+
+        document.getElementById('runScriptBtn').addEventListener('click', runScript);
+    </script>
+</body>
+</html>
